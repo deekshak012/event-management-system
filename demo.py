@@ -43,12 +43,12 @@ def query_db(sql: str):
     df = pd.DataFrame(data=data, columns=column_names)
 
     return df
+def registerEvent(eventname):
+    print(eventname)
 
 def displayEvents(name,ids,available,price):
-    ht={}
     if name:
         "## Available events"
-        form = st.form(key='my-form')
         col1, col2, col3, col4 = st.columns(4)
         with col1:
             st.write("Event")
@@ -59,17 +59,17 @@ def displayEvents(name,ids,available,price):
         with col4:
             st.write("Buy tickets")
         for i in range(len(name)):
-            with col1:
-                st.write(name[i])
-            with col2:
-                st.write(available[i])
-            with col3:
-                st.write(price[i])
-            with col4:
-                ht[name[i]] =  form.form_submit_button(name[i])
-        for h in ht:
-            if h:
-                st.write(f'yay{h}')        
+            with st.form(key=f'my-form{i}'):
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.write(name[i])
+                with col2:
+                    st.write(available[i])
+                with col3:
+                    st.write(price[i])
+                with col4:
+                    nameOfEvent = tuple([name[i]],)
+                    st.form_submit_button(label=name[i],on_click = registerEvent, args=nameOfEvent)
     else:
         st.write("No available events.")
     
@@ -86,21 +86,16 @@ if search == "Location":
         if st.button('Search'):
             if location_drop_down:
                 event_in_location = f"select e.name, etix.ticketid, sum(etix.noavailable) as available,etix.price from event e join location l on e.locationid = l.locationid join eventtickets etix on e.eventid = etix.eventid where l.name='{location_drop_down}' and etix.noavailable>0 group by e.name,etix.ticketid,etix.price;"
-                # try:
-                #     name = query_db(event_in_location)["name"].tolist()
-                #     ids = query_db(event_in_location)["ticketid"].tolist()
-                #     available = query_db(event_in_location)["available"].tolist()
-                #     price =  query_db(event_in_location)["price"].tolist()
-                #     displayEvents(name,ids,available,price)
-                # except:
-                #     st.write(
-                #         "Sorry! Something went wrong with your query, please try again."
-                #     )
-                name = query_db(event_in_location)["name"].tolist()
-                ids = query_db(event_in_location)["ticketid"].tolist()
-                available = query_db(event_in_location)["available"].tolist()
-                price =  query_db(event_in_location)["price"].tolist()
-                displayEvents(name,ids,available,price)
+                try:
+                    name = query_db(event_in_location)["name"].tolist()
+                    ids = query_db(event_in_location)["ticketid"].tolist()
+                    available = query_db(event_in_location)["available"].tolist()
+                    price =  query_db(event_in_location)["price"].tolist()
+                    displayEvents(name,ids,available,price)
+                except:
+                    st.write(
+                        "Sorry! Something went wrong with your query, please try again."
+                    )
 elif search == "Date":
     date = query_db("select distinct date from event order by date;")["date"].tolist()
     date_drop_down =  st.selectbox("Choose a date", date)
