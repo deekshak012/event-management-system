@@ -96,7 +96,7 @@ if search == "Location":
                         "Sorry! Something went wrong with your query, please try again."
                     )
 elif search == "Date":
-    date = query_db("select distinct date from event order by date;")["date"].tolist()
+    date = query_db("select distinct date from event where date >= now() order by date;")["date"].tolist()
     date_drop_down =  st.selectbox("Choose a date", date)
     if st.button('Search'):
             if date_drop_down:
