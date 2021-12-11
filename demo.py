@@ -46,7 +46,7 @@ def query_db(sql: str):
 def registerEvent(eventname):
     print(eventname)
 
-def displayEvents(name,ids,available,price):
+def displayEvents(name,available,price):
     if name:
         "## Available events"
         col1, col2, col3, col4 = st.columns(4)
@@ -69,7 +69,7 @@ def displayEvents(name,ids,available,price):
                     st.write(price[i])
                 with col4:
                     nameOfEvent = tuple([name[i]],)
-                    st.form_submit_button(label=name[i],on_click = registerEvent, args=nameOfEvent)
+                    st.form_submit_button(label="Register",on_click = registerEvent, args=nameOfEvent)
     else:
         st.write("No available events.")
     
@@ -85,13 +85,12 @@ if search == "Location":
         location_drop_down =  st.selectbox("Choose a location", locations)
         if st.button('Search'):
             if location_drop_down:
-                event_in_location = f"select e.name, etix.ticketid, sum(etix.noavailable) as available,etix.price from event e join location l on e.locationid = l.locationid join eventtickets etix on e.eventid = etix.eventid where l.name='{location_drop_down}' and etix.noavailable>0 group by e.name,etix.ticketid,etix.price;"
+                event_in_location = f"select e.name, etix.noavailable as available, etix.price from event e join location l on e.locationid = l.locationid join eventtickets etix on e.eventid = etix.eventid where l.name='{location_drop_down}' and etix.noavailable>0;"
                 try:
                     name = query_db(event_in_location)["name"].tolist()
-                    ids = query_db(event_in_location)["ticketid"].tolist()
                     available = query_db(event_in_location)["available"].tolist()
                     price =  query_db(event_in_location)["price"].tolist()
-                    displayEvents(name,ids,available,price)
+                    displayEvents(name,available,price)
                 except:
                     st.write(
                         "Sorry! Something went wrong with your query, please try again."
@@ -101,10 +100,12 @@ elif search == "Date":
     date_drop_down =  st.selectbox("Choose a date", date)
     if st.button('Search'):
             if date_drop_down:
-                event_in_date = f"select distinct(e.name) from event e where e.date='{date_drop_down}';"
+                event_in_date = f"select e.name, et.noavailable as available,et.price from event e join eventtickets et on e.eventid = et.eventid where e.date='{date_drop_down}'and et.noavailable>0;"
                 try:
-                    df = query_db(event_in_date)["name"].tolist()
-                    displayEvents(df)
+                    name = query_db(event_in_date)["name"].tolist()
+                    available = query_db(event_in_date)["available"].tolist()
+                    price =  query_db(event_in_date)["price"].tolist()
+                    displayEvents(name,available,price)
                 except:
                     st.write(
                         "Sorry! Something went wrong with your query, please try again."
@@ -114,10 +115,12 @@ elif search == "Preferences":
     pref_drop_down =  st.selectbox("Choose a preferred event type", eventTypeOnPreference)
     if st.button('Search'):
             if pref_drop_down:
-                event_in_pref = f"select distinct(e.name) from event e join eventtype et on e.eventtypeid = et.eventtypeid where et.type='{pref_drop_down}';"
+                event_in_pref = f"select e.name, etix.noavailable as available, etix.price from event e join eventtype et on e.eventtypeid = et.eventtypeid join eventtickets etix on e.eventid = etix.eventid where et.type='{pref_drop_down}' and etix.noavailable>0;"
                 try:
-                    df = query_db(event_in_pref)["name"].tolist()
-                    displayEvents(df)
+                    name = query_db(event_in_pref)["name"].tolist()
+                    available = query_db(event_in_pref)["available"].tolist()
+                    price =  query_db(event_in_pref)["price"].tolist()
+                    displayEvents(name,available,price)
                 except:
                     st.write(
                         "Sorry! Something went wrong with your query, please try again."
@@ -127,10 +130,12 @@ elif search == "Type":
     type_drop_down =  st.selectbox("Choose a type of event", eventType)
     if st.button('Search'):
             if type_drop_down:
-                event_in_type = f"select distinct(e.name) from event e join eventtype et on e.eventtypeid = et.eventtypeid where et.type='{type_drop_down}';"
+                event_in_type = f"select e.name, etix.noavailable as available, etix.price from event e join eventtype et on e.eventtypeid = et.eventtypeid join eventtickets etix on e.eventid = etix.eventid where et.type='{type_drop_down}' and etix.noavailable>0;"
                 try:
-                    df = query_db(event_in_type)["name"].tolist()
-                    displayEvents(df)
+                    name = query_db(event_in_type)["name"].tolist()
+                    available = query_db(event_in_type)["available"].tolist()
+                    price =  query_db(event_in_type)["price"].tolist()
+                    displayEvents(name,available,price)
                 except:
                     st.write(
                         "Sorry! Something went wrong with your query, please try again."
